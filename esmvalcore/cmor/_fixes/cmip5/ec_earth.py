@@ -42,8 +42,8 @@ class allvars(Fix):
                 new_time = iris.coords.DimCoord(time_data, standard_name='time', var_name='time', units=time_units)
 
                 # create a new cube with the right shape
-                latitude = cube.coord('latitude')
-                longitude = cube.coord('longitude')
+                lat = cube.coord('latitude')
+                lon = cube.coord('longitude')
                 dims = (time_data.shape[0], latitude.shape[0], longitude.shape[0])
                 data = cube.data
                 new_data = np.ma.append(data[:dims[0]-1,:,:], data[-1,:,:])
