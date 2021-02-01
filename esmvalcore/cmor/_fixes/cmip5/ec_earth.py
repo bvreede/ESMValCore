@@ -44,7 +44,7 @@ class allvars(Fix):
                 # create a new cube with the right shape
                 lat = cube.coord('latitude')
                 lon = cube.coord('longitude')
-                dims = (time_data.shape[0], latitude.shape[0], longitude.shape[0])
+                dims = (time_data.shape[0], lat.shape[0], lon.shape[0])
                 data = cube.data
                 new_data = np.ma.append(data[:dims[0]-1,:,:], data[-1,:,:])
                 new_data = new_data.reshape(dims)
