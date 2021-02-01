@@ -30,33 +30,31 @@ class allvars(Fix):
                 time_units = old_time.units
                 time_data = old_time.points
 
+                # erase none monotonic points (points erroneously copy-pasted)
                 d = np.diff(time_data)
-                idx_neg = np.where(d < 0.)[0]
+                idx_neg = np.where(d <= 0.)[0]
                 while len(idx_neg) > 0:
                     time_data = np.delete(time_data, idx_neg[0] + 1)
                     d = np.diff(time_data)
-                    idx_neg = np.where(d < 0.)[0]
+                    idx_neg = np.where(d <= 0.)[0]
 
-                for idx in idx_zeros:
-                    if idx == 0:
-                        continue
-                    correct_time = time_units.num2date(time_data[idx - 1])
-                    if days <= 31 and days >=28:  # assume monthly time steps
-                        new_time = \
-                            correct_time.replace(month=correct_time.month + 1)
-                    else:  # use "time[1] - time[0]" as step
-                        new_time = correct_time + time_diff
-                    old_time.points[idx] = time_units.date2num(new_time)
+                # create the new time coord
+                new_time = iris.coords.DimCoord(time_data, standard_name='time', var_name='time', units=time_units)
 
-                # create new time bounds
-                old_time.bounds = None
-                old_time.guess_bounds()
+                # create a new cube with the right shape
+                latitude = cube.coord('latitude')
+                longitude = cube.coord('longitude')
+                dims = (time_data.shape[0], latitude.shape[0], longitude.shape[0])
+                data = cube.data
+                new_data = np.ma.append(data[:dims[0]-1,:,:], data[-1,:,:])
+                new_data = new_data.reshape(dims)
 
-                # replace time coordinate with "repaired" values
-                new_time = iris.coords.DimCoord.from_coord(old_time)
-                time_idx = cube.coord_dims(old_time)
-                cube.remove_coord('time')
-                cube.add_dim_coord(new_time, time_idx)
+                tmp_cube = iris.cube.Cube(new_data, standard_name=cube.standard_name, long_name=cube.long_name, 
+                                          var_name=cube.var_name, units=cube.units, attributes=cube.attributes,
+                                          cell_methods=cube.cell_methods,
+                                          dim_coords_and_dims=[(new_time, 0), (lat, 1), (lon, 2)])
+
+                cube = tmp_cube
 
             except iris.exceptions.CoordinateNotFoundError:
                 pass
