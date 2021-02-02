@@ -21,6 +21,7 @@ class allvars(Fix):
         -------
         iris.cube.CubeList
         """
+        new_list = iris.cube.CubeList()
         for cube in cubes:
             try:
                 old_time = cube.coord('time')
@@ -49,17 +50,17 @@ class allvars(Fix):
                 new_data = np.ma.append(data[:dims[0]-1,:,:], data[-1,:,:])
                 new_data = new_data.reshape(dims)
 
-                tmp_cube = iris.cube.Cube(new_data, standard_name=cube.standard_name, long_name=cube.long_name, 
+                tmp_cube = iris.cube.Cube(new_data, standard_name=cube.standard_name, long_name=cube.long_name,
                                           var_name=cube.var_name, units=cube.units, attributes=cube.attributes,
                                           cell_methods=cube.cell_methods,
                                           dim_coords_and_dims=[(new_time, 0), (lat, 1), (lon, 2)])
 
-                cube = tmp_cube
+                new_list.append(tmp_cube)
 
             except iris.exceptions.CoordinateNotFoundError:
                 pass
 
-        return cubes
+        return new_list
 
 
 class Sic(Fix):
