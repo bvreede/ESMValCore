@@ -39,8 +39,12 @@ class allvars(Fix):
                         continue
                     correct_time = time_units.num2date(time_data[idx - 1])
                     if days <= 31 and days >=28:  # assume monthly time steps
-                        new_time = \
-                            correct_time.replace(month=correct_time.month + 1)
+                        if correct_time.month < 12:
+                            new_time = \
+                                correct_time.replace(month=correct_time.month + 1)
+                        else:
+                            new_time = \
+                                correct_time.replace(year=correct_time.year + 1, month=1)
                     else:  # use "time[1] - time[0]" as step
                         new_time = correct_time + time_diff
                     old_time.points[idx] = time_units.date2num(new_time)
